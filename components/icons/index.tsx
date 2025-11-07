@@ -141,3 +141,33 @@ export const SparklesIcon: React.FC<IconProps> = (props) => (
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6.343 6.343l-2.828 2.829M17.657 17.657l2.828-2.829M18 5h4M19 3v4M6.343 17.657l-2.828-2.829M17.657 6.343l2.828 2.829M12 21a9 9 0 100-18 9 9 0 000 18z" />
   </svg>
 );
+export const PhoneIcon: React.FC<IconProps> = (props) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+  </svg>
+);
+export const BatteryIcon: React.FC<IconProps> = (props) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20h6a2 2 0 002-2V6a2 2 0 00-2-2H9a2 2 0 00-2 2v12a2 2 0 002 2zM18 8h1a2 2 0 012 2v4a2 2 0 01-2 2h-1" />
+  </svg>
+);
+export const SunIcon: React.FC<IconProps> = (props) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M12 12a5 5 0 100-10 5 5 0 000 10z" />
+  </svg>
+);
+export const MoonIcon: React.FC<IconProps> = (props) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+  </svg>
+);
+export const HistoryIcon: React.FC<IconProps> = (props) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+export const SignalIcon: React.FC<IconProps> = (props) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.136 11.886c3.87-3.87 10.124-3.87 13.994 0M19.5 8.25c-2.22-2.22-5.18-3.6-8.25-3.6s-6.03 1.38-8.25 3.6" />
+  </svg>
+);

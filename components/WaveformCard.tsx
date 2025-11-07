@@ -148,7 +148,10 @@ const WaveformCard: React.FC<WaveformCardProps> = ({ label, color, generator, va
                 const { width, height } = entry.contentRect;
                 canvas.width = width;
                 canvas.height = height;
-                dataRef.current = Array(width).fill(50);
+                // FIX: Ensure width is a non-negative integer before creating an array.
+                // This prevents a RangeError if the width is fractional or negative during render.
+                const safeWidth = Math.max(0, Math.floor(width));
+                dataRef.current = Array(safeWidth).fill(50);
             }
         });
         resizeObserver.observe(parent);
@@ -158,10 +161,10 @@ const WaveformCard: React.FC<WaveformCardProps> = ({ label, color, generator, va
 
 
     return (
-        <div className="bg-brand-dark-accent rounded-lg p-4 shadow-lg flex flex-col h-40 md:h-48">
+        <div className="bg-white dark:bg-brand-dark-accent rounded-lg p-4 shadow-lg flex flex-col h-40 md:h-48">
             <div className="flex justify-between items-baseline">
                 <span className="text-sm font-bold" style={{ color }}>{label}</span>
-                <span className="text-xl font-bold text-white">{value || '...'} <span className="text-sm text-gray-400">{unit}</span></span>
+                <span className="text-xl font-bold text-brand-text-light dark:text-white">{value || '...'} <span className="text-sm text-gray-500 dark:text-gray-400">{unit}</span></span>
             </div>
             <div className="flex-grow relative mt-2 min-h-0">
                 <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full" />

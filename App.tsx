@@ -14,6 +14,7 @@ import PrivacyPage from './views/PrivacyPage';
 import TermsPage from './views/TermsPage';
 import { UserRole } from './types';
 import Chatbot from './components/Chatbot';
+import HistoryPage from './views/HistoryPage';
 
 const App: React.FC = () => {
     const { user, view } = useAuth();
@@ -44,6 +45,8 @@ const App: React.FC = () => {
                 return renderDashboard();
             case 'settings':
                 return <SettingsPage />;
+            case 'history':
+                return <HistoryPage />;
             case 'help':
                 return <HelpPage />;
             case 'privacy':

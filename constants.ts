@@ -1,5 +1,4 @@
-
-import { Patient, Vital, VitalStatus, VitalType, Place, EWScore, TimelineEvent, Medication, MedicationLog, CollaborationNote, UserRole, Alert } from './types';
+import { Patient, Vital, VitalStatus, VitalType, Place, EWScore, TimelineEvent, Medication, MedicationLog, CollaborationNote, UserRole, Alert, StressLevel, HistoricalVitalReading, MoodLog } from './types';
 
 export const MOCK_PATIENTS: Record<string, Patient> = {
     'patient-1': {
@@ -118,11 +117,46 @@ export const MOCK_COLLAB_NOTES: Record<string, CollaborationNote[]> = {
     'patient-3': [],
 };
 
+
+const generateMockHistory = (patientId: string): TimelineEvent[] => {
+    const history: TimelineEvent[] = [];
+    const now = new Date();
+    const meds = MOCK_MEDICATIONS[patientId] || [];
+    
+    for (let i = 30; i >= 0; i--) {
+        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        
+        // Vitals (3 times a day)
+        for (let j = 0; j < 3; j++) {
+            const vitalTime = new Date(date.getTime() + j * 8 * 60 * 60 * 1000);
+            history.push({ eventType: 'vital', id: `hv-${i}-${j}-hr`, timestamp: vitalTime, type: 'Heart Rate', value: parseFloat((70 + Math.random() * 20).toFixed(0)), unit: 'bpm', status: VitalStatus.Normal });
+            history.push({ eventType: 'vital', id: `hv-${i}-${j}-spo2`, timestamp: vitalTime, type: 'SpO2', value: parseFloat((96 + Math.random() * 3).toFixed(0)), unit: '%', status: VitalStatus.Normal });
+            const bpStatus = i % 5 === 0 ? VitalStatus.Warning : VitalStatus.Normal;
+            history.push({ eventType: 'vital', id: `hv-${i}-${j}-bp`, timestamp: vitalTime, type: 'Blood Pressure', value: parseFloat((125 + Math.random() * 15).toFixed(0)), unit: 'mmHg', status: bpStatus });
+        }
+        
+        // Mood Log (once a day)
+        if (i % 2 === 0) {
+            history.push({ eventType: 'mood', id: `mood-${i}`, timestamp: date, mood: ['Content', 'Neutral', 'Happy'][i % 3], stress: ['Low', 'Moderate'][i % 2] as StressLevel });
+        }
+
+        // Medication Log
+        meds.forEach((med, medIndex) => {
+            if (med.schedule.includes('daily')) {
+                history.push({ eventType: 'medication', id: `ml-${i}-${medIndex}`, medicationId: med.id, medicationName: med.name, timestamp: new Date(date.getTime() + 8 * 60 * 60 * 1000), status: i % 10 === 0 ? 'skipped' : 'taken' });
+            }
+        });
+    }
+
+    return history;
+};
+
 export const MOCK_TIMELINE: Record<string, TimelineEvent[]> = {
     'patient-1': [
+        ...generateMockHistory('patient-1'),
         MOCK_COLLAB_NOTES['patient-1'][0],
         MOCK_MED_LOGS['patient-1'][0],
-        { eventType: 'mood', id: 'mood-1', timestamp: new Date(Date.now() - 30 * 60 * 60 * 1000), mood: 'Content', stress: 'Low' } as TimelineEvent,
+        { eventType: 'mood', id: 'mood-1', timestamp: new Date(Date.now() - 30 * 60 * 60 * 1000), mood: 'Content', stress: 'Low' } as MoodLog,
         MOCK_COLLAB_NOTES['patient-1'][1],
         { eventType: 'alert', id: 'alert-1', patientId: 'patient-1', patientName: 'John Doe', message: 'Blood pressure is high (145 mmHg)', timestamp: new Date(Date.now() - 48 * 60 * 60 * 1000), acknowledged: true, type: 'vital' } as Alert,
     ].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()),

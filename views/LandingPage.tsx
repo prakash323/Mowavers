@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Button from '../components/ui/Button';
 import { useAuth } from '../hooks/useAuth';
@@ -8,21 +7,21 @@ const LandingPage: React.FC = () => {
     const { setView } = useAuth();
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center text-center p-4 bg-brand-dark">
+        <div className="min-h-screen flex flex-col items-center justify-center text-center p-4 bg-brand-light dark:bg-brand-dark">
             <div className="max-w-3xl">
                 <div className="flex justify-center items-center mb-6">
                     <LogoIcon className="h-16 w-16 text-brand-primary" />
                 </div>
-                <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-4">
+                <h1 className="text-4xl md:text-6xl font-extrabold text-brand-text-light dark:text-white mb-4">
                     Welcome to MOWAERS
                 </h1>
-                <p className="text-lg md:text-xl text-gray-300 mb-8">
+                <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8">
                     Continuous monitoring, intelligent alerts, and peace of mind. Your proactive health partner, connecting patients, caretakers, and doctors in real-time.
                 </p>
                 
-                <div className="bg-brand-dark-accent p-8 rounded-lg shadow-2xl">
-                    <h2 className="text-2xl font-bold text-white mb-6">Get Started</h2>
-                    <p className="text-gray-400 mb-6">Select your role to access the MOWAERS platform or view a demo.</p>
+                <div className="bg-white dark:bg-brand-dark-accent p-8 rounded-lg shadow-2xl">
+                    <h2 className="text-2xl font-bold text-brand-text-light dark:text-white mb-6">Get Started</h2>
+                    <p className="text-gray-500 dark:text-gray-400 mb-6">Select your role to access the MOWAERS platform or view a demo.</p>
                     <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
                         <Button onClick={() => setView('login')} className="w-full sm:w-auto">
                             Login / Demo

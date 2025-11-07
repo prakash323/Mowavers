@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Vital, VitalStatus } from '../types';
 import { ArrowUpIcon, ArrowDownIcon, MinusIcon } from './icons';
@@ -21,15 +20,15 @@ const VitalCard: React.FC<VitalCardProps> = ({ vital }) => {
   }[vital.trend];
 
   return (
-    <div className={`bg-brand-dark-accent rounded-lg p-4 border-l-4 ${statusColors[vital.status]} shadow-lg flex flex-col justify-between h-full`}>
+    <div className={`bg-white dark:bg-brand-dark-accent rounded-lg p-4 border-l-4 ${statusColors[vital.status]} shadow-lg flex flex-col justify-between h-full`}>
       <div>
-        <div className="flex justify-between items-center text-sm text-gray-400">
+        <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
           <span>{vital.type}</span>
           {trendIcon}
         </div>
-        <div className="text-3xl font-bold text-white my-2">
+        <div className="text-3xl font-bold text-brand-text-light dark:text-white my-2">
           {vital.value}
-          <span className="text-lg ml-1 text-gray-300">{vital.unit}</span>
+          <span className="text-lg ml-1 text-gray-600 dark:text-gray-300">{vital.unit}</span>
         </div>
       </div>
       <div className="text-xs text-gray-500">

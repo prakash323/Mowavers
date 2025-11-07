@@ -36,13 +36,13 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-brand-dark">
-      <div className="max-w-md w-full bg-brand-dark-accent p-8 rounded-lg shadow-2xl">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-brand-light dark:bg-brand-dark">
+      <div className="max-w-md w-full bg-white dark:bg-brand-dark-accent p-8 rounded-lg shadow-2xl">
         <div className="flex justify-center items-center mb-6">
           <LogoIcon className="h-12 w-12 text-brand-primary"/>
         </div>
-        <h2 className="text-2xl font-bold text-white mb-2 text-center">Welcome Back</h2>
-        <p className="text-gray-400 mb-8 text-center">Sign in to access your dashboard.</p>
+        <h2 className="text-2xl font-bold text-brand-text-light dark:text-white mb-2 text-center">Welcome Back</h2>
+        <p className="text-gray-500 dark:text-gray-400 mb-8 text-center">Sign in to access your dashboard.</p>
         
         <form onSubmit={handleLogin} noValidate>
           {error && (
@@ -52,7 +52,7 @@ const LoginPage: React.FC = () => {
           )}
           <div className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
               <input
                 id="email"
                 name="email"
@@ -61,12 +61,12 @@ const LoginPage: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-brand-dark border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary text-white"
+                className="w-full bg-brand-light-accent dark:bg-brand-dark border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary text-brand-text-light dark:text-white"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
               <input
                 id="password"
                 name="password"
@@ -75,18 +75,18 @@ const LoginPage: React.FC = () => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-brand-dark border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary text-white"
+                className="w-full bg-brand-light-accent dark:bg-brand-dark border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary text-brand-text-light dark:text-white"
               />
             </div>
             
             <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-300 mb-2">Select Your Role</label>
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Your Role</label>
               <select
                 id="role"
                 name="role"
                 value={role}
                 onChange={(e) => setRole(e.target.value as UserRole)}
-                className="w-full bg-brand-dark border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary text-white"
+                className="w-full bg-brand-light-accent dark:bg-brand-dark border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary text-brand-text-light dark:text-white"
               >
                 <option value={UserRole.Patient}>Patient</option>
                 <option value={UserRole.Caretaker}>Caretaker</option>
@@ -105,7 +105,7 @@ const LoginPage: React.FC = () => {
             </div>
           </div>
         </form>
-        <p className="mt-8 text-sm text-center text-gray-400">
+        <p className="mt-8 text-sm text-center text-gray-500 dark:text-gray-400">
             Don't have an account?{' '}
             <button onClick={() => setView('signup')} className="font-medium text-brand-primary hover:underline">
                 Sign Up

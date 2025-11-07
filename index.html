@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#F9FAFB">
     <title>MOWAERS</title>
     <script type="importmap">
     {
@@ -17,6 +18,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
+        darkMode: 'class',
         theme: {
           extend: {
             colors: {
@@ -24,6 +26,8 @@
               'brand-dark-accent': '#1F2937',
               'brand-text': '#D1D5DB',
               'brand-light': '#F9FAFB',
+              'brand-light-accent': '#F3F4F6',
+              'brand-text-light': '#1F2937',
               'brand-primary': '#3B82F6',
               'brand-secondary': '#14B8A6',
               'status-green': '#22C55E',
@@ -44,10 +48,6 @@
       }
     </script>
     <style>
-      body {
-        background-color: #111827; /* Corresponds to brand-dark */
-        color: #D1D5DB; /* Corresponds to brand-text */
-      }
       .safe-mode {
         font-size: 1.125rem; /* 18px, a bit larger for accessibility */
       }
@@ -59,7 +59,7 @@
       .safe-mode h3 { font-size: 1.5rem; }
     </style>
 </head>
-<body>
+<body class="bg-brand-light text-brand-text-light dark:bg-brand-dark dark:text-brand-text">
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>

@@ -1,9 +1,8 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User, UserRole, Alert } from '../types';
 import { MOCK_TIMELINE } from '../constants';
 
-type View = 'landing' | 'login' | 'signup' | 'dashboard' | 'settings' | 'help' | 'privacy' | 'terms';
+type View = 'landing' | 'login' | 'signup' | 'dashboard' | 'settings' | 'help' | 'privacy' | 'terms' | 'history';
 
 interface AuthContextType {
   user: User | null;

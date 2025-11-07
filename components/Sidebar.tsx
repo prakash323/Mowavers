@@ -1,13 +1,13 @@
-
 import React from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { DashboardIcon, SettingsIcon, HelpIcon, PrivacyIcon, TermsIcon, LogoIcon } from './icons';
+import { DashboardIcon, SettingsIcon, HelpIcon, PrivacyIcon, TermsIcon, LogoIcon, HistoryIcon } from './icons';
 
 const Sidebar: React.FC = () => {
   const { view, setView } = useAuth();
 
   const navItems = [
     { name: 'Dashboard', icon: DashboardIcon, view: 'dashboard' as const },
+    { name: 'History', icon: HistoryIcon, view: 'history' as const },
     { name: 'Settings', icon: SettingsIcon, view: 'settings' as const },
     { name: 'Help/Docs', icon: HelpIcon, view: 'help' as const },
     { name: 'Privacy Policy', icon: PrivacyIcon, view: 'privacy' as const },
@@ -15,7 +15,7 @@ const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-16 md:w-64 bg-brand-dark p-2 md:p-4 flex flex-col justify-between transition-all duration-300">
+    <aside className="w-16 md:w-64 bg-white dark:bg-brand-dark p-2 md:p-4 flex flex-col justify-between transition-all duration-300">
         <div>
             <nav className="mt-4">
                 <ul>
@@ -26,7 +26,7 @@ const Sidebar: React.FC = () => {
                         className={`w-full flex items-center p-3 rounded-lg transition-colors ${
                         view === item.view 
                             ? 'bg-brand-primary text-white' 
-                            : 'text-gray-400 hover:bg-brand-dark-accent hover:text-white'
+                            : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-brand-dark-accent hover:text-gray-900 dark:hover:text-white'
                         }`}
                     >
                         <item.icon className="h-6 w-6" />
