@@ -1,59 +1,81 @@
-import React, { useState } from 'react';
+
+import React, { useState, useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { MOCK_PATIENTS } from '../constants';
+import { MOCK_PATIENTS, MOCK_EWS } from '../constants';
 import PatientCard from '../components/PatientCard';
 import AlertBanner from '../components/AlertBanner';
-import { User, Patient, Coordinates } from '../types';
-import SymptomTimeline from '../components/SymptomTimeline';
-import HealthProfilePage from './patient/HealthProfilePage';
-import EWSIndicator from '../components/EWSIndicator';
-import { MOCK_EWS } from '../constants';
+import { Patient } from '../types';
 import AIDoctorSummary from '../components/doctor/AIDoctorSummary';
+import SymptomTimeline from '../components/SymptomTimeline';
 import CollaborationNotes from '../components/caretaker/CollaborationNotes';
 import useGeolocation from '../hooks/useGeolocation';
 
+
 const DoctorDashboard: React.FC = () => {
   const { user, alerts, acknowledgeAlert } = useAuth();
-  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  // Add explicit type to fix type inference errors
+  const allPatients: Patient[] = Object.values(MOCK_PATIENTS);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const location = useGeolocation();
-  const doctorLocation = !location.loading && location.latitude ? { latitude: location.latitude, longitude: location.longitude } as Coordinates : null;
 
-  const patientIds = user?.patients || [];
-  const patients = patientIds.map(id => MOCK_PATIENTS[id]).filter(Boolean);
-  const doctorAlerts = alerts.filter(a => patientIds.includes(a.patientId));
+  const handleSelectPatient = (patientId: string) => {
+    const patient = allPatients.find(p => p.id === patientId);
+    if(patient) setSelectedPatient(patient);
+  };
+  
+  const unacknowledgedAlerts = alerts.filter(a => !a.acknowledged);
 
-  if (selectedPatientId) {
-    const selectedPatient = MOCK_PATIENTS[selectedPatientId] as Patient;
+  const filteredPatients = useMemo(() => {
+    return allPatients
+      .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      .sort((a, b) => (MOCK_EWS[b.id]?.score || 0) - (MOCK_EWS[a.id]?.score || 0));
+  }, [allPatients, searchTerm]);
+
+  if (selectedPatient) {
     return (
-        <div className="animate-fade-in">
-            <button onClick={() => setSelectedPatientId(null)} className="mb-6 bg-brand-dark-accent text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors">
-                &larr; Back to Patient List
-            </button>
-             <div className="flex justify-between items-start mb-6">
-                <h2 className="text-3xl font-bold text-white">Patient Details: {selectedPatient.name}</h2>
-                <EWSIndicator ews={MOCK_EWS[selectedPatientId]} />
-            </div>
-            <div className="space-y-8">
-              <AIDoctorSummary patient={selectedPatient} />
-              <CollaborationNotes patientId={selectedPatientId} />
-              <SymptomTimeline patientId={selectedPatientId} />
-              <HealthProfilePage />
-            </div>
+      <div className="animate-fade-in space-y-6">
+        <button onClick={() => setSelectedPatient(null)} className="text-brand-primary hover:underline">
+            &larr; Back to Patient List
+        </button>
+        <AIDoctorSummary patient={selectedPatient} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SymptomTimeline patientId={selectedPatient.id} />
+            <CollaborationNotes patientId={selectedPatient.id} />
         </div>
+      </div>
     );
   }
 
   return (
-    <div className="animate-fade-in">
-      <h2 className="text-3xl font-bold text-white mb-6">Doctor Dashboard</h2>
-      <AlertBanner alerts={doctorAlerts} onAcknowledge={acknowledgeAlert}/>
-      <h3 className="text-xl font-semibold text-white mb-4 mt-6">Your Patients</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {patients.map((patient: User) => (
-          <PatientCard key={patient.id} patient={patient} onSelect={setSelectedPatientId} currentUserLocation={doctorLocation} />
-        ))}
-      </div>
-       {patients.length === 0 && <p className="text-gray-400">You do not have any patients assigned.</p>}
+    <div className="animate-fade-in space-y-6">
+        <div>
+            <h2 className="text-3xl font-bold text-white">Doctor's Dashboard</h2>
+            <p className="text-gray-400">Welcome, {user?.name}. Prioritized patient list below.</p>
+        </div>
+        
+        <AlertBanner alerts={unacknowledgedAlerts} onAcknowledge={acknowledgeAlert} />
+
+        <div className="mt-4">
+            <input 
+                type="text"
+                placeholder="Search patient name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full max-w-sm bg-brand-dark-accent border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+            />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredPatients.map(patient => (
+                <PatientCard 
+                    key={patient.id} 
+                    patient={patient} 
+                    onSelect={handleSelectPatient}
+                    currentUserLocation={location}
+                />
+            ))}
+        </div>
     </div>
   );
 };

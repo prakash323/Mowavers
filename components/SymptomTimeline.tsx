@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MOCK_TIMELINE } from '../constants';
 import { TimelineEvent, Alert, HistoricalVitalReading, MoodLog, MedicationLog, VoiceNote, CollaborationNote } from '../types';
@@ -14,31 +13,27 @@ const eventConfig = {
 };
 
 const TimelineItem: React.FC<{ event: TimelineEvent }> = ({ event }) => {
-// FIX: Use `eventType` for discrimination to align with the updated TimelineEvent type.
+    // Use `eventType` for discrimination to align with the TimelineEvent type.
     const config = eventConfig[event.eventType] || eventConfig.note;
     const Icon = config.icon;
 
     const renderContent = () => {
-// FIX: Switching on `eventType` allows for correct type narrowing, resolving property access errors.
+        // Switching on `eventType` allows for correct type narrowing, resolving property access errors.
         switch (event.eventType) {
             case 'alert':
-                return <p><strong>Alert:</strong> {(event as Alert).message}</p>;
+                return <p><strong>Alert:</strong> {event.message}</p>;
             case 'vital':
-                const vitalEvent = event as HistoricalVitalReading;
-                return <p><strong>Vital Reading:</strong> {vitalEvent.type} was {vitalEvent.value} {vitalEvent.unit} (<span className={vitalEvent.status === 'Normal' ? 'text-green-400' : 'text-amber-400'}>{vitalEvent.status}</span>)</p>;
+                return <p><strong>Vital Reading:</strong> {event.type} was {event.value} {event.unit} (<span className={event.status === 'Normal' ? 'text-green-400' : 'text-amber-400'}>{event.status}</span>)</p>;
             case 'mood':
-                const moodEvent = event as MoodLog;
-                return <p><strong>Mood Log:</strong> Feeling {moodEvent.mood}, Stress Level: {moodEvent.stress}.</p>;
+                return <p><strong>Mood Log:</strong> Feeling {event.mood}, Stress Level: {event.stress}.</p>;
             case 'medication':
-                const medEvent = event as MedicationLog;
-                return <p><strong>Medication:</strong> {medEvent.medicationName} marked as {medEvent.status}.</p>;
+                return <p><strong>Medication:</strong> {event.medicationName} marked as {event.status}.</p>;
             case 'voice':
-                return <p><strong>Voice Note Summary:</strong> "{(event as VoiceNote).summary}"</p>;
+                return <p><strong>Voice Note Summary:</strong> "{event.summary}"</p>;
             case 'note':
-                const noteEvent = event as CollaborationNote;
                 return <>
-                    <p><strong>Note from {noteEvent.authorName} ({noteEvent.authorRole}):</strong></p>
-                    <p className="italic text-gray-400">"{noteEvent.note}"</p>
+                    <p><strong>Note from {event.authorName} ({event.authorRole}):</strong></p>
+                    <p className="italic text-gray-400">"{event.note}"</p>
                 </>;
             default:
                 return null;

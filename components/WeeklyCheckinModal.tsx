@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Modal from './Modal';
 import Button from './ui/Button';
@@ -45,8 +44,10 @@ const WeeklyCheckinModal: React.FC<WeeklyCheckinModalProps> = ({ isOpen, onClose
     
     if (hasCriticalSymptom) {
         const aiSummary = await summarizeVoiceNote(`The patient reported the following during their weekly check-in: ${summaryText}`);
+        // FIX: Add missing eventType property to align with the Alert type.
         const newAlert: Alert = {
             id: `checkin-${Date.now()}`,
+            eventType: 'alert',
             patientId: user!.id,
             patientName: user!.name,
             message: `High symptom severity reported. AI Summary: ${aiSummary}`,

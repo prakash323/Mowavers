@@ -9,63 +9,71 @@ export interface User {
   id: string;
   name: string;
   role: UserRole;
-  patients?: string[]; // For caretakers and doctors
+}
+
+export interface Coordinates {
+    latitude: number;
+    longitude: number;
 }
 
 export interface Patient extends User {
-    conditions?: string[];
-    healthNotes?: string;
-    coordinates?: Coordinates;
-}
-
-export enum VitalType {
-  HeartRate = 'Heart Rate',
-  SpO2 = 'SpO2',
-  BloodPressure = 'Blood Pressure',
-  RespirationRate = 'Respiration Rate',
-  Temperature = 'Temperature',
+  role: UserRole.Patient;
+  dob: string;
+  conditions?: string[];
+  coordinates?: Coordinates;
 }
 
 export enum VitalStatus {
-  Normal = 'Normal',
-  Warning = 'Warning',
-  Critical = 'Critical',
+    Normal = 'Normal',
+    Warning = 'Warning',
+    Critical = 'Critical',
 }
+
+export type VitalType = 'Heart Rate' | 'SpO2' | 'Blood Pressure' | 'Respiration Rate' | 'Temperature' | 'ECG';
 
 export interface Vital {
-  type: VitalType;
-  value: number;
-  unit: string;
-  status: VitalStatus;
-  trend: 'up' | 'down' | 'stable';
-  baseline: number;
+    type: VitalType;
+    value: number;
+    unit: string;
+    status: VitalStatus;
+    trend: 'up' | 'down' | 'stable';
+    timestamp: Date;
+    baseline: string;
 }
 
-export interface HistoricalVitalReading extends Omit<Vital, 'trend'> {
+export interface HistoricalVitalReading {
+    eventType: 'vital';
+    id: string;
     timestamp: Date;
+    type: VitalType;
+    value: number;
+    unit: string;
+    status: VitalStatus;
 }
 
 export interface Alert {
-  id: string;
-  patientId: string;
-  patientName: string;
-  message: string;
-  timestamp: Date;
-  acknowledged: boolean;
-  type: 'sos' | 'vitals' | 'fall' | 'check-in';
+    id: string;
+    eventType: 'alert';
+    patientId: string;
+    patientName: string;
+    message: string;
+    timestamp: Date;
+    acknowledged: boolean;
+    type: 'vital' | 'sos' | 'check-in';
 }
 
 export enum StressLevel {
-    Low = 'Low',
-    Moderate = 'Moderate',
-    High = 'High',
-    VeryHigh = 'Very High'
+    Low = "Low",
+    Moderate = "Moderate",
+    High = "High",
+    VeryHigh = "Very High",
 }
 
 export interface MoodLog {
+    eventType: 'mood';
     id: string;
     timestamp: Date;
-    mood: 'Happy' | 'Content' | 'Neutral' | 'Sad' | 'Anxious';
+    mood: string;
     stress: StressLevel;
 }
 
@@ -73,45 +81,36 @@ export interface Medication {
     id: string;
     name: string;
     dosage: string;
-    schedule: string; // e.g., "Daily at 9:00 AM"
+    schedule: string;
 }
 
 export interface MedicationLog {
+    eventType: 'medication';
     id: string;
     medicationId: string;
     medicationName: string;
     timestamp: Date;
-    status: 'taken' | 'skipped' | 'missed';
+    status: 'taken' | 'skipped';
 }
 
 export interface VoiceNote {
+    eventType: 'voice';
     id: string;
     timestamp: Date;
-    audioUrl?: string; // a mock url
     summary: string;
 }
 
 export interface CollaborationNote {
+    eventType: 'note';
     id: string;
+    timestamp: Date;
     authorName: string;
     authorRole: UserRole;
-    timestamp: Date;
     note: string;
 }
 
-export interface EWScore {
-    score: number;
-    level: 'Low' | 'Medium' | 'High';
-    timestamp: Date;
-}
 
-// FIX: Renamed `type` to `eventType` to avoid conflict with `type` property in `Alert` and `HistoricalVitalReading`.
-export type TimelineEvent = (HistoricalVitalReading | Alert | MoodLog | MedicationLog | VoiceNote | CollaborationNote) & { eventType: 'vital' | 'alert' | 'mood' | 'medication' | 'voice' | 'note' };
-
-export interface Coordinates {
-    latitude: number;
-    longitude: number;
-}
+export type TimelineEvent = Alert | HistoricalVitalReading | MoodLog | MedicationLog | VoiceNote | CollaborationNote;
 
 export interface Place {
     id: string;
@@ -120,4 +119,10 @@ export interface Place {
     address: string;
     phone: string;
     coordinates: Coordinates;
+}
+
+export interface EWScore {
+    score: number;
+    level: 'Low' | 'Medium' | 'High';
+    timestamp: Date;
 }

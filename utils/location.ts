@@ -1,3 +1,4 @@
+
 import { Coordinates, Place } from "../types";
 
 // Haversine formula to calculate distance between two lat/lng points

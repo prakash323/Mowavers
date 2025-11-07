@@ -12,20 +12,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user } = useAuth();
 
   if (!user) {
+    // For logged-out views (Landing, Login, Signup), we don't need the sidebar/header.
     return (
-      <div className="min-h-screen bg-brand-dark">
-        <Header />
-        <main>{children}</main>
-      </div>
+        <div className="bg-brand-dark text-brand-text min-h-screen">
+            {children}
+        </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex bg-brand-dark-accent">
+    <div className="flex h-screen bg-brand-dark text-brand-text">
       <Sidebar />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-brand-dark p-6">
           {children}
         </main>
       </div>

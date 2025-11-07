@@ -88,7 +88,7 @@ const WaveformCard: React.FC<WaveformCardProps> = ({ label, color, generator, va
         const height = canvas.height;
         const data = dataRef.current;
 
-        // FIX: The generator function requires a 'time' argument. Passing timeRef.current.
+        // Fix: Pass the current time to the generator to create a moving waveform.
         const newValue = generator(timeRef.current);
         data.push(newValue);
         timeRef.current += 1;

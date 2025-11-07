@@ -1,63 +1,71 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { MOCK_PATIENTS } from '../constants';
+import { MOCK_PATIENTS, MOCK_EWS } from '../constants';
 import PatientCard from '../components/PatientCard';
 import AlertBanner from '../components/AlertBanner';
-import { User, Coordinates } from '../types';
-import SymptomTimeline from '../components/SymptomTimeline';
-import HealthProfilePage from './patient/HealthProfilePage';
-import EWSIndicator from '../components/EWSIndicator';
-import { MOCK_EWS } from '../constants';
-import CollaborationNotes from '../components/caretaker/CollaborationNotes';
+import { Patient } from '../types';
+import PatientDetailView from '../components/caretaker/PatientDetailView';
 import useGeolocation from '../hooks/useGeolocation';
-import NearbyPlaces from '../components/NearbyPlaces';
 
 const CaretakerDashboard: React.FC = () => {
   const { user, alerts, acknowledgeAlert } = useAuth();
-  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const allPatients: Patient[] = Object.values(MOCK_PATIENTS); // For demo, caretaker sees all patients
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const location = useGeolocation();
-  const caretakerLocation = !location.loading && location.latitude ? { latitude: location.latitude, longitude: location.longitude } as Coordinates : null;
 
-  const monitoredPatientIds = user?.patients || [];
-  const monitoredPatients = monitoredPatientIds.map(id => MOCK_PATIENTS[id]).filter(Boolean);
-  const caretakerAlerts = alerts.filter(a => monitoredPatientIds.includes(a.patientId));
+  const handleSelectPatient = (patientId: string) => {
+      const patient = allPatients.find(p => p.id === patientId);
+      if (patient) setSelectedPatient(patient);
+  };
 
-  if (selectedPatientId) {
-    const selectedPatient = MOCK_PATIENTS[selectedPatientId];
-    return (
-        <div className="animate-fade-in">
-            <button onClick={() => setSelectedPatientId(null)} className="mb-6 bg-brand-dark-accent text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors">
-                &larr; Back to Patient List
-            </button>
-            <div className="flex justify-between items-start mb-6">
-                <h2 className="text-3xl font-bold text-white">Patient Details: {selectedPatient.name}</h2>
-                <EWSIndicator ews={MOCK_EWS[selectedPatientId]} />
-            </div>
+  const unacknowledgedAlerts = alerts.filter(a => !a.acknowledged);
 
-            <div className="space-y-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <CollaborationNotes patientId={selectedPatientId} />
-                {selectedPatient.coordinates && <NearbyPlaces patientLocation={selectedPatient.coordinates} isEmergency={false} />}
-              </div>
-              <SymptomTimeline patientId={selectedPatientId} />
-              <HealthProfilePage />
-            </div>
-        </div>
-    );
+  const filteredPatients = useMemo(() => {
+      return allPatients
+      .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      .sort((a, b) => (MOCK_EWS[b.id]?.score || 0) - (MOCK_EWS[a.id]?.score || 0));
+  }, [allPatients, searchTerm]);
+
+  if (selectedPatient) {
+      return (
+          <PatientDetailView 
+              patient={selectedPatient} 
+              onBack={() => setSelectedPatient(null)} 
+          />
+      );
   }
 
   return (
-    <div className="animate-fade-in">
-      <h2 className="text-3xl font-bold text-white mb-6">Caretaker Dashboard</h2>
-      <AlertBanner alerts={caretakerAlerts} onAcknowledge={acknowledgeAlert}/>
-      <h3 className="text-xl font-semibold text-white mb-4 mt-6">Monitored Patients</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {monitoredPatients.map((patient: User) => (
-          <PatientCard key={patient.id} patient={patient} onSelect={setSelectedPatientId} currentUserLocation={caretakerLocation} />
-        ))}
+      <div className="animate-fade-in space-y-6">
+          <div>
+              <h2 className="text-3xl font-bold text-white">Caretaker Dashboard</h2>
+              <p className="text-gray-400">Welcome, {user?.name}. Your assigned patients are listed below.</p>
+          </div>
+          
+          <AlertBanner alerts={unacknowledgedAlerts} onAcknowledge={acknowledgeAlert} />
+
+          <div className="mt-4">
+              <input 
+                  type="text"
+                  placeholder="Search patient name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full max-w-sm bg-brand-dark-accent border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+              />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredPatients.map(patient => (
+                  <PatientCard 
+                      key={patient.id} 
+                      patient={patient} 
+                      onSelect={handleSelectPatient}
+                      currentUserLocation={location}
+                  />
+              ))}
+          </div>
       </div>
-       {monitoredPatients.length === 0 && <p className="text-gray-400">You are not monitoring any patients.</p>}
-    </div>
   );
 };
 

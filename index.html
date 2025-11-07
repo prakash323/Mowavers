@@ -1,45 +1,67 @@
-
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MOWAERS MVP 1.0</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOWAERS</title>
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://aistudiocdn.com/react@^19.2.0",
+        "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+        "react/": "https://aistudiocdn.com/react@^19.2.0/",
+        "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.0"
+      }
+    }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         theme: {
           extend: {
             colors: {
-              'brand-dark': '#1a202c',
-              'brand-dark-accent': '#2d3748',
-              'brand-light': '#f7fafc',
-              'brand-light-accent': '#edf2f7',
-              'brand-primary': '#4299e1', // A calm, trustworthy blue
-              'brand-secondary': '#48bb78', // Green for success/stable
-              'brand-text': '#e2e8f0',
-              'brand-text-dark': '#2d3748',
-              'status-green': '#48bb78',
-              'status-amber': '#f59e0b',
-              'status-red': '#f56565',
+              'brand-dark': '#111827',
+              'brand-dark-accent': '#1F2937',
+              'brand-text': '#D1D5DB',
+              'brand-light': '#F9FAFB',
+              'brand-primary': '#3B82F6',
+              'brand-secondary': '#14B8A6',
+              'status-green': '#22C55E',
+              'status-amber': '#F59E0B',
+              'status-red': '#EF4444',
             },
-          },
-        },
+            animation: {
+              'fade-in': 'fadeIn 0.5s ease-in-out',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: 0, transform: 'translateY(-10px)' },
+                '100%': { opacity: 1, transform: 'translateY(0)' },
+              },
+            }
+          }
+        }
       }
     </script>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.0"
-  }
-}
-</script>
+    <style>
+      body {
+        background-color: #111827; /* Corresponds to brand-dark */
+        color: #D1D5DB; /* Corresponds to brand-text */
+      }
+      .safe-mode {
+        font-size: 1.125rem; /* 18px, a bit larger for accessibility */
+      }
+      .safe-mode button, .safe-mode input, .safe-mode select, .safe-mode p, .safe-mode span {
+        font-size: 1rem;
+      }
+      .safe-mode h1 { font-size: 2.5rem; }
+      .safe-mode h2 { font-size: 2rem; }
+      .safe-mode h3 { font-size: 1.5rem; }
+    </style>
 </head>
-  <body class="bg-brand-dark text-brand-text antialiased">
+<body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
-  </body>
+</body>
 </html>

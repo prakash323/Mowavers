@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { MOCK_COLLAB_NOTES } from '../../constants';
@@ -13,7 +12,9 @@ const CollaborationNotes: React.FC<{ patientId: string }> = ({ patientId }) => {
 
     const handleAddNote = () => {
         if (!newNote.trim() || !user) return;
+        // Fix: Added missing eventType property to align with the CollaborationNote type.
         const note: CollaborationNote = {
+            eventType: 'note',
             id: `cn-${Date.now()}`,
             authorName: user.name,
             authorRole: user.role,

@@ -1,134 +1,135 @@
-import { User, UserRole, Patient, Vital, VitalType, VitalStatus, HistoricalVitalReading, Alert, Medication, MoodLog, StressLevel, MedicationLog, VoiceNote, CollaborationNote, EWScore, TimelineEvent, Place, Coordinates } from './types';
 
-export const MOCK_USERS: Record<UserRole, User> = {
-  [UserRole.Patient]: { id: 'p1', name: 'Alex Johnson', role: UserRole.Patient },
-  [UserRole.Caretaker]: { id: 'c1', name: 'Brenda Smith', role: UserRole.Caretaker, patients: ['p1'] },
-  [UserRole.Doctor]: { id: 'd1', name: 'Dr. Evelyn Reed', role: UserRole.Doctor, patients: ['p1', 'p2'] },
-};
+import { Patient, Vital, VitalStatus, VitalType, Place, EWScore, TimelineEvent, Medication, MedicationLog, CollaborationNote, UserRole, Alert } from './types';
 
 export const MOCK_PATIENTS: Record<string, Patient> = {
-    'p1': { 
-        id: 'p1', name: 'Alex Johnson', role: UserRole.Patient, 
-        conditions: ['Hypertension', 'Asthma'], 
-        healthNotes: 'Patient manages hypertension with daily medication and uses an inhaler as needed for asthma.',
-        coordinates: { latitude: 34.0522, longitude: -118.2437 } // Los Angeles
+    'patient-1': {
+        id: 'patient-1',
+        name: 'John Doe',
+        role: UserRole.Patient,
+        dob: '1960-05-15',
+        conditions: ['Hypertension', 'COPD'],
+        coordinates: { latitude: 34.0522, longitude: -118.2437 }
     },
-    'p2': { 
-        id: 'p2', name: 'John Appleseed', role: UserRole.Patient, 
-        conditions: ['Diabetes Type 2'], 
-        healthNotes: 'Recently diagnosed. Monitoring blood glucose levels closely.',
-        coordinates: { latitude: 34.1522, longitude: -118.3437 } // Near LA
+    'patient-2': {
+        id: 'patient-2',
+        name: 'Jane Smith',
+        role: UserRole.Patient,
+        dob: '1955-08-20',
+        conditions: ['Diabetes Type 2'],
+        coordinates: { latitude: 34.0622, longitude: -118.2537 }
     },
-};
-
-export const MOCK_CARETAKER_LOCATION: Coordinates = { latitude: 34.0522, longitude: -118.4437 }; // Santa Monica
-export const MOCK_DOCTOR_LOCATION: Coordinates = { latitude: 33.9522, longitude: -118.2437 }; // South LA
-
-export const VITAL_THRESHOLDS: Record<VitalType, { warning: [number, number], critical: [number, number] }> = {
-    [VitalType.HeartRate]: { warning: [55, 100], critical: [45, 120] },
-    [VitalType.SpO2]: { warning: [92, 100], critical: [0, 90] },
-    [VitalType.BloodPressure]: { warning: [90, 139], critical: [70, 180] }, // Systolic
-    [VitalType.RespirationRate]: { warning: [10, 22], critical: [8, 28] },
-    [VitalType.Temperature]: { warning: [99.5, 101], critical: [95, 103] },
+    'patient-3': {
+        id: 'patient-3',
+        name: 'Robert Johnson',
+        role: UserRole.Patient,
+        dob: '1972-01-30',
+        conditions: ['Asthma'],
+        coordinates: { latitude: 34.0422, longitude: -118.2337 }
+    },
 };
 
 export const INITIAL_VITALS: Record<string, Vital[]> = {
-    'p1': [
-        { type: VitalType.HeartRate, value: 72, unit: 'bpm', status: VitalStatus.Normal, trend: 'stable', baseline: 75 },
-        { type: VitalType.SpO2, value: 98, unit: '%', status: VitalStatus.Normal, trend: 'stable', baseline: 97 },
-        { type: VitalType.BloodPressure, value: 135, unit: 'mmHg', status: VitalStatus.Warning, trend: 'up', baseline: 125 },
-        { type: VitalType.RespirationRate, value: 16, unit: 'rpm', status: VitalStatus.Normal, trend: 'stable', baseline: 16 },
+    'patient-1': [
+        { type: 'Heart Rate', value: 78, unit: 'bpm', status: VitalStatus.Normal, trend: 'stable', timestamp: new Date(), baseline: '60-100' },
+        { type: 'SpO2', value: 97, unit: '%', status: VitalStatus.Normal, trend: 'stable', timestamp: new Date(), baseline: '95-100' },
+        { type: 'Blood Pressure', value: 135, unit: 'mmHg', status: VitalStatus.Warning, trend: 'up', timestamp: new Date(), baseline: '120/80' },
+        { type: 'Respiration Rate', value: 16, unit: 'breaths/min', status: VitalStatus.Normal, trend: 'stable', timestamp: new Date(), baseline: '12-20' },
     ],
-    'p2': [
-        { type: VitalType.HeartRate, value: 85, unit: 'bpm', status: VitalStatus.Normal, trend: 'up', baseline: 80 },
-        { type: VitalType.SpO2, value: 96, unit: '%', status: VitalStatus.Normal, trend: 'stable', baseline: 98 },
-        { type: VitalType.BloodPressure, value: 125, unit: 'mmHg', status: VitalStatus.Normal, trend: 'stable', baseline: 130 },
-        { type: VitalType.RespirationRate, value: 18, unit: 'rpm', status: VitalStatus.Normal, trend: 'stable', baseline: 17 },
-    ]
-};
-
-export const MOCK_ALERTS: Alert[] = [
-    { id: 'a1', patientId: 'p2', patientName: 'John Appleseed', message: 'Critical: Heart rate dropped to 38 bpm.', timestamp: new Date(Date.now() - 5 * 60 * 1000), acknowledged: false, type: 'vitals' },
-    { id: 'a2', patientId: 'p1', patientName: 'Alex Johnson', message: 'Warning: SpO2 fell to 91%.', timestamp: new Date(Date.now() - 10 * 60 * 1000), acknowledged: true, type: 'vitals' },
-    { id: 'a3', patientId: 'p1', patientName: 'Alex Johnson', message: 'SOS button pressed by patient.', timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), acknowledged: true, type: 'sos'},
-    { id: 'a4', patientId: 'p1', patientName: 'Alex Johnson', message: 'High symptom severity reported in weekly check-in.', timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), acknowledged: true, type: 'check-in'},
-];
-
-export const MOCK_MEDICATIONS: Record<string, Medication[]> = {
-    'p1': [
-        { id: 'med1', name: 'Lisinopril', dosage: '10mg', schedule: 'Once daily in the morning' },
-        { id: 'med2', name: 'Albuterol Inhaler', dosage: '2 puffs', schedule: 'As needed for shortness of breath' },
+    'patient-2': [
+        { type: 'Heart Rate', value: 85, unit: 'bpm', status: VitalStatus.Normal, trend: 'stable', timestamp: new Date(), baseline: '60-100' },
+        { type: 'SpO2', value: 98, unit: '%', status: VitalStatus.Normal, trend: 'stable', timestamp: new Date(), baseline: '95-100' },
+        { type: 'Blood Pressure', value: 125, unit: 'mmHg', status: VitalStatus.Normal, trend: 'stable', timestamp: new Date(), baseline: '130/85' },
+        { type: 'Respiration Rate', value: 18, unit: 'breaths/min', status: VitalStatus.Normal, trend: 'stable', timestamp: new Date(), baseline: '12-20' },
     ],
-    'p2': [
-        { id: 'med3', name: 'Metformin', dosage: '500mg', schedule: 'Twice daily with meals' },
+    'patient-3': [
+        { type: 'Heart Rate', value: 95, unit: 'bpm', status: VitalStatus.Warning, trend: 'up', timestamp: new Date(), baseline: '60-100' },
+        { type: 'SpO2', value: 92, unit: '%', status: VitalStatus.Warning, trend: 'down', timestamp: new Date(), baseline: '94-100' },
+        { type: 'Blood Pressure', value: 118, unit: 'mmHg', status: VitalStatus.Normal, trend: 'stable', timestamp: new Date(), baseline: '120/80' },
+        { type: 'Respiration Rate', value: 22, unit: 'breaths/min', status: VitalStatus.Warning, trend: 'up', timestamp: new Date(), baseline: '12-20' },
     ]
 };
 
-export const MOCK_MED_LOGS: Record<string, MedicationLog[]> = {
-    'p1': [
-        { id: 'ml1', medicationId: 'med1', medicationName: 'Lisinopril', timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), status: 'taken'},
-        { id: 'ml2', medicationId: 'med1', medicationName: 'Lisinopril', timestamp: new Date(Date.now() - 28 * 60 * 60 * 1000), status: 'taken'},
-        { id: 'ml3', medicationId: 'med2', medicationName: 'Albuterol Inhaler', timestamp: new Date(Date.now() - 48 * 60 * 60 * 1000), status: 'taken'},
-    ]
-};
-
-export const MOCK_MOOD_LOGS: Record<string, MoodLog[]> = {
-    'p1': [
-        { id: 'mood1', timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), mood: 'Content', stress: StressLevel.Low },
-        { id: 'mood2', timestamp: new Date(Date.now() - 30 * 60 * 60 * 1000), mood: 'Anxious', stress: StressLevel.High },
-    ]
-};
-
-export const MOCK_VOICE_NOTES: Record<string, VoiceNote[]> = {
-    'p1': [
-        { id: 'vn1', timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000), summary: 'Patient reported feeling light-headed after walking up the stairs, but it subsided after a few minutes of rest.'}
-    ]
-};
-
-export const MOCK_COLLAB_NOTES: Record<string, CollaborationNote[]> = {
-    'p1': [
-        { id: 'cn1', authorName: 'Brenda Smith', authorRole: UserRole.Caretaker, timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000), note: 'Alex seemed a bit tired today but spirits are good. Ensured he took his morning medication.'}
-    ]
+export const VITAL_THRESHOLDS: Record<VitalType, { warning: [number, number], critical: [number, number] }> = {
+    'Heart Rate': { warning: [50, 110], critical: [40, 130] },
+    'SpO2': { warning: [92, 101], critical: [0, 90] },
+    'Blood Pressure': { warning: [130, 139], critical: [140, 300] }, // Simplified to systolic
+    'Respiration Rate': { warning: [10, 24], critical: [8, 28] },
+    'Temperature': { warning: [99.5, 102], critical: [95, 103] },
+    'ECG': { warning: [0, 0], critical: [0, 0] }, // Status for ECG is handled differently
 };
 
 export const MOCK_EWS: Record<string, EWScore> = {
-    'p1': { score: 3, level: 'Medium', timestamp: new Date() },
-    'p2': { score: 1, level: 'Low', timestamp: new Date() },
+    'patient-1': { score: 3, level: 'Low', timestamp: new Date() },
+    'patient-2': { score: 1, level: 'Low', timestamp: new Date() },
+    'patient-3': { score: 7, level: 'High', timestamp: new Date() },
+};
+
+export const DAILY_SUGGESTIONS = [
+    "Remember to stay hydrated! Drinking enough water is crucial for cardiovascular health.",
+    "A short walk can do wonders for your circulation and mood. Aim for 15-20 minutes if you feel up to it.",
+    "Make sure you're taking your medications at the same time each day to maintain their effectiveness.",
+    "A balanced diet rich in fruits and vegetables supports overall health. What colorful food can you add to your plate today?",
+    "Good sleep is essential for recovery and health. Try to create a relaxing bedtime routine tonight."
+];
+
+export const MOCK_PLACES: Place[] = [
+    { id: 'hosp-1', name: 'St. Jude Medical Center', type: 'hospital', address: '123 Health St, Los Angeles, CA', phone: '(555) 123-4567', coordinates: { latitude: 34.0530, longitude: -118.2450 } },
+    { id: 'hosp-2', name: 'Good Samaritan Hospital', type: 'hospital', address: '456 Wellness Ave, Los Angeles, CA', phone: '(555) 987-6543', coordinates: { latitude: 34.0490, longitude: -118.2600 } },
+    { id: 'pharm-1', name: 'CVS Pharmacy', type: 'store', address: '789 Cure Blvd, Los Angeles, CA', phone: '(555) 111-2222', coordinates: { latitude: 34.0580, longitude: -118.2400 } },
+    { id: 'pharm-2', name: 'Walgreens', type: 'store', address: '101 Remedy Rd, Los Angeles, CA', phone: '(555) 333-4444', coordinates: { latitude: 34.0450, longitude: -118.2390 } },
+];
+
+
+export const CHECKIN_QUESTIONS: Record<string, { question: string, isCritical: (answer: string) => boolean }> = {
+    'Hypertension': { question: 'Have you experienced any severe headaches, vision changes, or chest pain this week?', isCritical: (a) => /yes|headache|vision|chest pain/i.test(a) },
+    'COPD': { question: 'How has your breathing been? Have you experienced more shortness of breath than usual?', isCritical: (a) => /worse|more short|harder to breathe/i.test(a) },
+    'Diabetes Type 2': { question: 'Have you had any issues with your blood sugar levels or noticed any new numbness in your feet?', isCritical: (a) => /high|low|numbness/i.test(a) },
+    'Asthma': { question: 'How often have you used your rescue inhaler this week?', isCritical: (a) => (parseInt(a) || 0) > 4 },
+    'Default': { question: 'How have you been feeling overall this past week?', isCritical: () => false },
+};
+
+export const MOCK_MEDICATIONS: Record<string, Medication[]> = {
+    'patient-1': [
+        { id: 'med-1', name: 'Lisinopril', dosage: '10mg', schedule: 'Once daily' },
+        { id: 'med-2', name: 'Albuterol Inhaler', dosage: 'As needed', schedule: 'For shortness of breath' },
+    ],
+    'patient-2': [
+        { id: 'med-3', name: 'Metformin', dosage: '500mg', schedule: 'Twice daily with meals' },
+    ],
+    'patient-3': [],
+};
+
+export const MOCK_MED_LOGS: Record<string, MedicationLog[]> = {
+    'patient-1': [
+        { eventType: 'medication', id: 'ml-1', medicationId: 'med-1', medicationName: 'Lisinopril', timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), status: 'taken' },
+    ],
+    'patient-2': [
+        { eventType: 'medication', id: 'ml-2', medicationId: 'med-3', medicationName: 'Metformin', timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000), status: 'taken' },
+    ],
+    'patient-3': [],
+};
+
+export const MOCK_COLLAB_NOTES: Record<string, CollaborationNote[]> = {
+    'patient-1': [
+        { eventType: 'note', id: 'cn-1', authorName: 'Sarah Connor', authorRole: UserRole.Caretaker, timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), note: "John seemed a bit more tired than usual yesterday. Monitored his vitals, they were stable." },
+        { eventType: 'note', id: 'cn-2', authorName: 'Dr. Evans', authorRole: UserRole.Doctor, timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), note: "Reviewed latest vitals. BP is still slightly elevated. Continue monitoring and encourage adherence to low-sodium diet." },
+    ],
+    'patient-2': [],
+    'patient-3': [],
 };
 
 export const MOCK_TIMELINE: Record<string, TimelineEvent[]> = {
-    'p1': [
-// FIX: Added `as const` to eventType properties to ensure TypeScript infers the literal types, resolving the assignment error.
-        { eventType: 'alert' as const, ...MOCK_ALERTS[1] },
-        { eventType: 'mood' as const, ...MOCK_MOOD_LOGS['p1'][0] },
-        { eventType: 'medication' as const, ...MOCK_MED_LOGS['p1'][0] },
-        { eventType: 'note' as const, ...MOCK_COLLAB_NOTES['p1'][0] },
-        { eventType: 'voice' as const, ...MOCK_VOICE_NOTES['p1'][0] },
-    ].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime())
-};
-
-export const MOCK_PLACES: Place[] = [
-    { id: 'h1', name: 'Cedars-Sinai Medical Center', type: 'hospital', address: '8700 Beverly Blvd, Los Angeles', phone: '(310) 423-3277', coordinates: { latitude: 34.0760, longitude: -118.3813 }},
-    { id: 'h2', name: 'UCLA Medical Center', type: 'hospital', address: '757 Westwood Plaza, Los Angeles', phone: '(310) 825-9111', coordinates: { latitude: 34.0648, longitude: -118.4442 }},
-    { id: 's1', name: 'CVS Pharmacy', type: 'store', address: '8490 Beverly Blvd, Los Angeles', phone: '(310) 659-3957', coordinates: { latitude: 34.0765, longitude: -118.3753 }},
-    { id: 's2', name: 'Walgreens Pharmacy', type: 'store', address: '1234 N La Brea Ave, West Hollywood', phone: '(323) 876-2484', coordinates: { latitude: 34.0950, longitude: -118.3444 }},
-];
-
-export const DAILY_SUGGESTIONS = [
-  "Remember to stay hydrated! Drinking enough water is key for cardiovascular health.",
-  "A short 10-minute walk can boost your mood and improve circulation. Consider a stroll if you're feeling up to it.",
-  "Mindful breathing can help lower stress. Try taking 5 deep, slow breaths right now.",
-  "Make sure your meals include some leafy greens today. They're packed with essential nutrients.",
-  "Getting 7-8 hours of sleep is vital for recovery and overall health. Aim for a consistent bedtime tonight."
-];
-
-export const HEALTH_CONDITIONS = [
-    "Hypertension", "Asthma", "Diabetes Type 1", "Diabetes Type 2", "Coronary Artery Disease", "COPD", "Atrial Fibrillation", "Sleep Apnea"
-];
-
-export const CHECKIN_QUESTIONS: Record<string, { question: string; isCritical: (answer: string) => boolean }> = {
-    "Hypertension": { question: "Have you experienced any severe headaches, dizziness, or blurred vision?", isCritical: answer => /yes|severe|dizzy|blurred/i.test(answer) },
-    "Asthma": { question: "Have you had to use your rescue inhaler more than usual, or experienced severe shortness of breath?", isCritical: answer => /yes|more|severe|breathless/i.test(answer) },
-    "Diabetes Type 2": { question: "Have you had any episodes of extreme thirst, fatigue, or confusion?", isCritical: answer => /yes|extreme|thirst|fatigue|confusion/i.test(answer) },
-    "Default": { question: "Have you experienced any new or concerning symptoms this week?", isCritical: answer => /yes|concerning|new|bad/i.test(answer) },
+    'patient-1': [
+        MOCK_COLLAB_NOTES['patient-1'][0],
+        MOCK_MED_LOGS['patient-1'][0],
+        { eventType: 'mood', id: 'mood-1', timestamp: new Date(Date.now() - 30 * 60 * 60 * 1000), mood: 'Content', stress: 'Low' } as TimelineEvent,
+        MOCK_COLLAB_NOTES['patient-1'][1],
+        { eventType: 'alert', id: 'alert-1', patientId: 'patient-1', patientName: 'John Doe', message: 'Blood pressure is high (145 mmHg)', timestamp: new Date(Date.now() - 48 * 60 * 60 * 1000), acknowledged: true, type: 'vital' } as Alert,
+    ].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()),
+    'patient-2': [
+        MOCK_MED_LOGS['patient-2'][0],
+    ].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()),
+    'patient-3': [
+        { eventType: 'alert', id: 'alert-2', patientId: 'patient-3', patientName: 'Robert Johnson', message: 'SpO2 is critically low (88%)', timestamp: new Date(), acknowledged: false, type: 'vital' } as Alert,
+    ].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()),
 };

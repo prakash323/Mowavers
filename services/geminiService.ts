@@ -1,105 +1,130 @@
+import { GoogleGenAI } from "@google/genai";
+// Corrected import path for types
+import { Patient, Vital, TimelineEvent } from "../types";
 
-import { GoogleGenAI, Chat, GenerateContentResponse } from "@google/genai";
-import { Patient, Vital } from "./types";
-
+// This is a placeholder for a secure way to access the API key.
+// In a real application, this would be handled by a backend service or secure environment variables.
 const apiKey = process.env.API_KEY;
-
 if (!apiKey) {
-  console.error("API_KEY environment variable not set.");
+    throw new Error("API_KEY environment variable not set");
 }
 
-const ai = new GoogleGenAI({ apiKey: apiKey! });
+const ai = new GoogleGenAI({ apiKey });
 
-const chatSessions: Record<string, Chat> = {};
+const model = 'gemini-2.5-flash';
 
-const getChat = (sessionId: string) => {
-    if (!chatSessions[sessionId]) {
-        chatSessions[sessionId] = ai.chats.create({
-            model: 'gemini-2.5-flash',
-            config: {
-                systemInstruction: `You are "MOWAERS AI Assistant", a helpful and friendly AI assistant for a health monitoring application.
-                Your primary role is to answer general questions, explain health concepts in simple terms, and provide non-medical support.
-                IMPORTANT: You MUST NOT provide any medical advice, diagnosis, or treatment.
-                If a user asks for medical advice (e.g., "Should I take this medicine?", "Is this heart rate dangerous?"), you must decline politely and firmly, and advise them to consult a qualified healthcare professional.
-                Example refusal: "As an AI assistant, I am not qualified to provide medical advice. It's very important that you speak with a doctor or another qualified healthcare provider about any medical concerns you have."
-                Be empathetic, clear, and concise. Your goal is to be a helpful guide for the application, not a medical expert.`,
-            }
-        });
-    }
-    return chatSessions[sessionId];
-}
-
+const formatVitals = (vitals: Vital[]): string => {
+    return vitals.map(v => `${v.type}: ${v.value} ${v.unit} (Status: ${v.status}, Trend: ${v.trend})`).join('\n');
+};
 
 export const sendMessageToBot = async (message: string, patient: Patient, vitals: Vital[]): Promise<string> => {
-    if (!apiKey) return "API Key is not configured.";
+    const vitalsString = formatVitals(vitals);
+    const patientContext = `The user is a patient named ${patient.name}. Their known conditions are ${patient.conditions?.join(', ') || 'none'}. Their current vitals are:\n${vitalsString}.`;
+    
+    const contents = `${patientContext}\n\nPatient question: "${message}"\n\nAI Assistant response:`;
+    const systemInstruction = "You are a helpful AI assistant for a health monitoring app called MOWAERS. Your name is the MOWAERS AI Assistant. You must not provide any medical advice. You can answer general health questions or questions about the patient's current (provided) vital signs. Be friendly and concise.";
 
     try {
-        const chat = getChat(patient.id);
-        const vitalString = vitals.map(v => `${v.type}: ${v.value} ${v.unit} (${v.status})`).join(', ');
-        const fullMessage = `
-            User question: "${message}"
-            
-            Current patient context (for your information only, do not share specific values unless the user asks):
-            - Conditions: ${patient.conditions?.join(', ') || 'None'}
-            - Recent Vitals: ${vitalString}
-            
-            Based on this context, provide a safe, non-diagnostic answer.
-        `;
-        const response: GenerateContentResponse = await chat.sendMessage({ message: fullMessage });
+        const response = await ai.models.generateContent({
+            model,
+            contents,
+            config: {
+                systemInstruction,
+                temperature: 0.5,
+                topP: 0.95,
+                topK: 64,
+                maxOutputTokens: 150,
+            },
+        });
         return response.text;
     } catch (error) {
-        console.error("Gemini API error:", error);
-        return "Sorry, I encountered an error. Please try again later.";
+        console.error('Gemini API error in sendMessageToBot:', error);
+        return "I'm sorry, I encountered an error while processing your request.";
     }
 };
 
 export const summarizeVoiceNote = async (transcription: string): Promise<string> => {
-    if (!apiKey) return "API Key not configured.";
+    const contents = `Please summarize the following patient voice note transcription into a concise, one-sentence summary for a doctor's quick review. Extract the key symptoms mentioned.\n\nTranscription: "${transcription}"\n\nSummary:`;
+    
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: `Please summarize the following patient's voice note into a concise, clinically relevant sentence for a doctor's review. Focus on symptoms and patient sentiment. Transcription: "${transcription}"`,
+            model,
+            contents,
+            config: {
+                maxOutputTokens: 60,
+                temperature: 0.2,
+            }
         });
         return response.text;
     } catch (error) {
-        console.error("Gemini API error:", error);
+        console.error('Gemini API error in summarizeVoiceNote:', error);
         return "Could not generate summary.";
     }
 };
 
-export const generateDoctorSummary = async (patient: Patient, vitals: Vital[], timeline: any[]): Promise<string> => {
-    if (!apiKey) return "API Key not configured.";
-    try {
-        const prompt = `
-            Generate a brief AI summary for Dr. Reed about patient ${patient.name}.
-            Patient Conditions: ${patient.conditions?.join(', ') || 'N/A'}.
-            Current Vitals: ${vitals.map(v => `${v.type}: ${v.value} (${v.status})`).join('; ')}.
-            Recent Events on Timeline (last 24 hours): ${timeline.slice(0, 5).map(e => `${e.type}: ${e.message || e.mood || e.note || e.summary}`).join('; ')}.
-
-            Based on this data, provide:
-            1. A one-sentence overview of the patient's current status.
-            2. Key trends or recent alerts of note.
-            3. A suggested follow-up action (e.g., "Routine follow-up recommended," "Consider medication adjustment review," "Urgent review of vitals suggested").
-        `;
-        const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-        return response.text;
-    } catch (error) {
-        console.error("Gemini API error:", error);
-        return "Could not generate AI summary.";
-    }
-};
-
-
 export const getLifestyleSuggestion = async (conditions: string[]): Promise<string> => {
-     if (!apiKey) return "API Key not configured.";
-     try {
+    const contents = `Provide a single, simple, actionable lifestyle tip (like a diet, exercise, or mindfulness suggestion) for a patient with the following conditions: ${conditions.join(', ')}. The suggestion should be general and not constitute medical advice.`;
+
+    try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: `Provide a safe, general, non-diagnostic lifestyle tip (related to diet, hydration, or light activity) for a person with the following conditions: ${conditions.join(', ')}. The tip must be universally safe and not contradict standard medical advice. Frame it as a gentle suggestion.`,
+            model,
+            contents,
+            config: {
+                maxOutputTokens: 80,
+                temperature: 0.7,
+            }
         });
         return response.text;
     } catch (error) {
-        console.error("Gemini API error:", error);
-        return "Could not generate suggestion at this time.";
+        console.error('Gemini API error in getLifestyleSuggestion:', error);
+        return "Keep focusing on your health goals and stay hydrated today.";
     }
-}
+};
+
+export const generateDoctorSummary = async (patient: Patient, vitals: Vital[], timeline: TimelineEvent[]): Promise<string> => {
+    const vitalsString = formatVitals(vitals);
+    
+    const timelineSummary = timeline
+        .slice(0, 5) // last 5 events
+        .map(e => {
+            const date = e.timestamp.toLocaleDateString();
+            switch(e.eventType) {
+                case 'alert': return `${date} - Alert: ${e.message}`;
+                case 'vital': return `${date} - Vital Reading: ${e.type} was ${e.value} ${e.unit} (${e.status})`;
+                case 'mood': return `${date} - Mood Log: Feeling ${e.mood}, Stress: ${e.stress}.`;
+                case 'medication': return `${date} - Medication: ${e.medicationName} marked as ${e.status}.`;
+                case 'note': return `${date} - Note from ${e.authorRole} ${e.authorName}: ${e.note}`;
+                case 'voice': return `${date} - Voice Note Summary: ${e.summary}`;
+            }
+        }).filter(Boolean).join('\n');
+
+    const contents = `
+        **Patient:** ${patient.name} | **DOB:** ${patient.dob} | **Conditions:** ${patient.conditions?.join(', ') || 'N/A'}
+
+        **Current Vitals:**
+        ${vitalsString}
+
+        **Recent Timeline Events:**
+        ${timelineSummary || 'No recent events.'}
+
+        ---
+        Based *only* on the data above, provide a concise clinical summary for a doctor. Structure your response into three sections using markdown: "### Key Observations", "### Potential Risks", and "### Recommended Actions". Do not diagnose. Focus on data-driven insights.
+    `;
+
+    const systemInstruction = "You are a clinical AI assistant. Your role is to analyze patient data and provide a clear, concise summary for a healthcare professional. Do not provide a diagnosis. Focus on highlighting trends, risks, and actionable insights from the provided data. Use markdown for formatting.";
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-pro',
+            contents,
+            config: { 
+                systemInstruction,
+                temperature: 0.3,
+            },
+        });
+        return response.text;
+    } catch (error) {
+        console.error('Gemini API error in generateDoctorSummary:', error);
+        return "Error generating summary. Please review patient data manually.";
+    }
+};

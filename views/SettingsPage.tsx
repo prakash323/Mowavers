@@ -1,21 +1,24 @@
-
 import React from 'react';
+import { useAuth } from '../hooks/useAuth';
 
 const SettingsPage: React.FC = () => {
+  const { user } = useAuth();
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto animate-fade-in">
       <h2 className="text-3xl font-bold text-white mb-6">Settings</h2>
-      <div className="bg-brand-dark-accent p-8 rounded-lg">
-        <p className="text-gray-300">This is a placeholder for user settings. Future versions will include options for notification preferences, data management, and profile updates.</p>
-        <div className="mt-6 space-y-4">
-            <div>
-                <label className="block text-gray-400 mb-2" htmlFor="name">Full Name</label>
-                <input id="name" type="text" value="Demo User" disabled className="w-full bg-brand-dark border border-gray-600 rounded-md p-2" />
-            </div>
-            <div>
-                <label className="block text-gray-400 mb-2" htmlFor="email">Email</label>
-                <input id="email" type="email" value="demo@mowaers.com" disabled className="w-full bg-brand-dark border border-gray-600 rounded-md p-2" />
-            </div>
+      <div className="bg-brand-dark-accent p-8 rounded-lg space-y-6">
+        <div>
+          <h3 className="text-xl font-semibold text-brand-primary mb-2">Account Information</h3>
+          <p className="text-gray-300">Name: {user?.name}</p>
+          <p className="text-gray-300">Role: {user?.role}</p>
+        </div>
+        <div>
+            <h3 className="text-xl font-semibold text-brand-primary mb-2">Notifications</h3>
+            <p className="text-gray-300">This is a placeholder for notification settings.</p>
+        </div>
+        <div>
+            <h3 className="text-xl font-semibold text-brand-primary mb-2">Theme</h3>
+            <p className="text-gray-300">This is a placeholder for theme settings (e.g., light/dark mode).</p>
         </div>
       </div>
     </div>

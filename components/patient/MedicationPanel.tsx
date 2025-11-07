@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { MOCK_MEDICATIONS, MOCK_MED_LOGS } from '../../constants';
 import { Medication, MedicationLog } from '../../types';
@@ -10,7 +9,9 @@ const MedicationPanel: React.FC<{ patientId: string }> = ({ patientId }) => {
     const [medLogs, setMedLogs] = useState<MedicationLog[]>(MOCK_MED_LOGS[patientId] || []);
 
     const handleLog = (med: Medication, status: 'taken' | 'skipped') => {
+        // Fix: Added missing eventType property to align with the MedicationLog type.
         const newLog: MedicationLog = {
+            eventType: 'medication',
             id: `ml-${Date.now()}`,
             medicationId: med.id,
             medicationName: med.name,
