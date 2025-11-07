@@ -1,104 +1,64 @@
-
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { PATIENTS, MOCK_ALERTS } from '../constants';
-import { Patient, Alert } from '../types';
+import { MOCK_PATIENTS } from '../constants';
 import PatientCard from '../components/PatientCard';
 import AlertBanner from '../components/AlertBanner';
-import Chatbot from '../components/Chatbot';
-import Modal from '../components/Modal';
-import { useMockVitals } from '../hooks/useMockVitals';
-import VitalCard from '../components/VitalCard';
-import Spinner from '../components/ui/Spinner';
-import Button from '../components/ui/Button';
+import { User, Coordinates } from '../types';
+import SymptomTimeline from '../components/SymptomTimeline';
+import HealthProfilePage from './patient/HealthProfilePage';
+import EWSIndicator from '../components/EWSIndicator';
+import { MOCK_EWS } from '../constants';
+import CollaborationNotes from '../components/caretaker/CollaborationNotes';
+import useGeolocation from '../hooks/useGeolocation';
+import NearbyPlaces from '../components/NearbyPlaces';
 
 const CaretakerDashboard: React.FC = () => {
-    const { user } = useAuth();
-    const [alerts, setAlerts] = useState<Alert[]>(MOCK_ALERTS);
-    const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const { user, alerts, acknowledgeAlert } = useAuth();
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const location = useGeolocation();
+  const caretakerLocation = !location.loading && location.latitude ? { latitude: location.latitude, longitude: location.longitude } as Coordinates : null;
 
-    const monitoredPatients = useMemo(() => PATIENTS.filter(p => p.caretakerId === user?.id), [user?.id]);
-    
-    const handleAcknowledge = (alertId: string) => {
-        setAlerts(currentAlerts =>
-            currentAlerts.map(alert =>
-                alert.id === alertId ? { ...alert, acknowledged: true } : alert
-            )
-        );
-    };
+  const monitoredPatientIds = user?.patients || [];
+  const monitoredPatients = monitoredPatientIds.map(id => MOCK_PATIENTS[id]).filter(Boolean);
+  const caretakerAlerts = alerts.filter(a => monitoredPatientIds.includes(a.patientId));
 
-    const selectedPatient = PATIENTS.find(p => p.id === selectedPatientId);
-
+  if (selectedPatientId) {
+    const selectedPatient = MOCK_PATIENTS[selectedPatientId];
     return (
-        <div className="container mx-auto">
-            <h2 className="text-3xl font-bold text-white mb-6">Family Nexus</h2>
-            
-            <AlertBanner alerts={alerts} onAcknowledge={handleAcknowledge} />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                {monitoredPatients.length > 0 ? (
-                    monitoredPatients.map(patient => (
-                        <PatientCard key={patient.id} patient={patient} onSelect={setSelectedPatientId} />
-                    ))
-                ) : (
-                    <p className="text-gray-400">No patients are currently assigned to you.</p>
-                )}
+        <div className="animate-fade-in">
+            <button onClick={() => setSelectedPatientId(null)} className="mb-6 bg-brand-dark-accent text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors">
+                &larr; Back to Patient List
+            </button>
+            <div className="flex justify-between items-start mb-6">
+                <h2 className="text-3xl font-bold text-white">Patient Details: {selectedPatient.name}</h2>
+                <EWSIndicator ews={MOCK_EWS[selectedPatientId]} />
             </div>
 
-            {selectedPatient && (
-                <PatientDetailModal
-                    patient={selectedPatient}
-                    isOpen={!!selectedPatientId}
-                    onClose={() => setSelectedPatientId(null)}
-                />
-            )}
-
-            <Chatbot />
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <CollaborationNotes patientId={selectedPatientId} />
+                {selectedPatient.coordinates && <NearbyPlaces patientLocation={selectedPatient.coordinates} isEmergency={false} />}
+              </div>
+              <SymptomTimeline patientId={selectedPatientId} />
+              <HealthProfilePage />
+            </div>
         </div>
     );
-};
+  }
 
-interface PatientDetailModalProps {
-  patient: Patient;
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-const PatientDetailModal: React.FC<PatientDetailModalProps> = ({ patient, isOpen, onClose }) => {
-    const { vitals, loading } = useMockVitals(patient.id);
-    const [note, setNote] = useState('');
-
-    const handleAddNote = () => {
-        if(note.trim()) {
-            console.log(`Note for ${patient.name}: ${note}`); // Mock action
-            setNote('');
-            alert('Note added successfully!');
-        }
-    };
-
-    return (
-        <Modal isOpen={isOpen} onClose={onClose} title={`Details for ${patient.name}`}>
-            {loading ? <div className="flex justify-center items-center h-64"><Spinner/></div> : (
-                <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {vitals.map(vital => <VitalCard key={vital.type} vital={vital} />)}
-                    </div>
-                    <div className="pt-4 border-t border-gray-700">
-                        <h4 className="font-bold text-lg mb-2">Add Note</h4>
-                        <textarea
-                            value={note}
-                            onChange={(e) => setNote(e.target.value)}
-                            className="w-full bg-brand-dark border border-gray-600 rounded-md p-2 h-24 focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                            placeholder={`Add an observation for ${patient.name}...`}
-                        />
-                        <div className="text-right mt-2">
-                            <Button onClick={handleAddNote}>Save Note</Button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </Modal>
-    );
+  return (
+    <div className="animate-fade-in">
+      <h2 className="text-3xl font-bold text-white mb-6">Caretaker Dashboard</h2>
+      <AlertBanner alerts={caretakerAlerts} onAcknowledge={acknowledgeAlert}/>
+      <h3 className="text-xl font-semibold text-white mb-4 mt-6">Monitored Patients</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {monitoredPatients.map((patient: User) => (
+          <PatientCard key={patient.id} patient={patient} onSelect={setSelectedPatientId} currentUserLocation={caretakerLocation} />
+        ))}
+      </div>
+       {monitoredPatients.length === 0 && <p className="text-gray-400">You are not monitoring any patients.</p>}
+    </div>
+  );
 };
 
 export default CaretakerDashboard;

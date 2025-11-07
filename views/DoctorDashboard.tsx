@@ -1,98 +1,59 @@
-
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { PATIENTS } from '../constants';
-import { Patient, VitalStatus } from '../types';
-import Chatbot from '../components/Chatbot';
-import Button from '../components/ui/Button';
+import { MOCK_PATIENTS } from '../constants';
+import PatientCard from '../components/PatientCard';
+import AlertBanner from '../components/AlertBanner';
+import { User, Patient, Coordinates } from '../types';
+import SymptomTimeline from '../components/SymptomTimeline';
+import HealthProfilePage from './patient/HealthProfilePage';
+import EWSIndicator from '../components/EWSIndicator';
+import { MOCK_EWS } from '../constants';
+import AIDoctorSummary from '../components/doctor/AIDoctorSummary';
+import CollaborationNotes from '../components/caretaker/CollaborationNotes';
+import useGeolocation from '../hooks/useGeolocation';
 
 const DoctorDashboard: React.FC = () => {
-  const { user } = useAuth();
-  const [filter, setFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState<VitalStatus | 'all'>('all');
+  const { user, alerts, acknowledgeAlert } = useAuth();
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const location = useGeolocation();
+  const doctorLocation = !location.loading && location.latitude ? { latitude: location.latitude, longitude: location.longitude } as Coordinates : null;
 
-  const cohort = useMemo(() => PATIENTS.filter(p => p.doctorId === user?.id), [user?.id]);
+  const patientIds = user?.patients || [];
+  const patients = patientIds.map(id => MOCK_PATIENTS[id]).filter(Boolean);
+  const doctorAlerts = alerts.filter(a => patientIds.includes(a.patientId));
 
-  const filteredCohort = useMemo(() => {
-    return cohort
-      .filter(p => p.name.toLowerCase().includes(filter.toLowerCase()))
-      .filter(p => statusFilter === 'all' || p.status === statusFilter);
-  }, [cohort, filter, statusFilter]);
-  
-  const handleExport = () => {
-      alert("A CSV report of the current patient cohort has been generated.");
-  };
-
-  const getStatusColor = (status: VitalStatus) => ({
-      [VitalStatus.Normal]: 'text-status-green',
-      [VitalStatus.Warning]: 'text-status-amber',
-      [VitalStatus.Critical]: 'text-status-red font-bold',
-  }[status]);
-
-  return (
-    <div className="container mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-            <h2 className="text-3xl font-bold text-white">Patient Cohort Matrix</h2>
-             <Button onClick={handleExport}>Export Report</Button>
-        </div>
-      
-        <div className="mb-6 p-4 bg-brand-dark-accent rounded-lg flex flex-col md:flex-row gap-4 items-center">
-            <input
-                type="text"
-                placeholder="Filter by patient name..."
-                value={filter}
-                onChange={e => setFilter(e.target.value)}
-                className="w-full md:w-1/3 bg-brand-dark border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary"
-            />
-            <select
-                value={statusFilter}
-                onChange={e => setStatusFilter(e.target.value as VitalStatus | 'all')}
-                className="w-full md:w-1/3 bg-brand-dark border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary"
-            >
-                <option value="all">All Statuses</option>
-                <option value={VitalStatus.Normal}>Normal</option>
-                <option value={VitalStatus.Warning}>Warning</option>
-                <option value={VitalStatus.Critical}>Critical</option>
-            </select>
-        </div>
-
-        <div className="bg-brand-dark-accent rounded-lg shadow-lg overflow-hidden">
-            <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                    <thead className="bg-brand-dark">
-                    <tr>
-                        <th className="p-4 font-semibold">Name</th>
-                        <th className="p-4 font-semibold">Age</th>
-                        <th className="p-4 font-semibold">Status</th>
-                        <th className="p-4 font-semibold">Location</th>
-                        <th className="p-4 font-semibold">Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {filteredCohort.length > 0 ? filteredCohort.map((patient, index) => (
-                        <tr key={patient.id} className={`border-t border-gray-700 ${index % 2 === 1 ? 'bg-black/20' : ''}`}>
-                        <td className="p-4">{patient.name}</td>
-                        <td className="p-4">{patient.age}</td>
-                        <td className={`p-4 font-semibold ${getStatusColor(patient.status)}`}>{patient.status}</td>
-                        <td className="p-4 text-gray-400">{patient.location}</td>
-                        <td className="p-4">
-                            <Button variant="secondary" size="sm" onClick={() => alert(`Viewing details for ${patient.name}`)}>
-                                View Details
-                            </Button>
-                        </td>
-                        </tr>
-                    )) : (
-                        <tr>
-                            <td colSpan={5} className="text-center p-8 text-gray-400">
-                                No patients match the current filters.
-                            </td>
-                        </tr>
-                    )}
-                    </tbody>
-                </table>
+  if (selectedPatientId) {
+    const selectedPatient = MOCK_PATIENTS[selectedPatientId] as Patient;
+    return (
+        <div className="animate-fade-in">
+            <button onClick={() => setSelectedPatientId(null)} className="mb-6 bg-brand-dark-accent text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors">
+                &larr; Back to Patient List
+            </button>
+             <div className="flex justify-between items-start mb-6">
+                <h2 className="text-3xl font-bold text-white">Patient Details: {selectedPatient.name}</h2>
+                <EWSIndicator ews={MOCK_EWS[selectedPatientId]} />
+            </div>
+            <div className="space-y-8">
+              <AIDoctorSummary patient={selectedPatient} />
+              <CollaborationNotes patientId={selectedPatientId} />
+              <SymptomTimeline patientId={selectedPatientId} />
+              <HealthProfilePage />
             </div>
         </div>
-      <Chatbot />
+    );
+  }
+
+  return (
+    <div className="animate-fade-in">
+      <h2 className="text-3xl font-bold text-white mb-6">Doctor Dashboard</h2>
+      <AlertBanner alerts={doctorAlerts} onAcknowledge={acknowledgeAlert}/>
+      <h3 className="text-xl font-semibold text-white mb-4 mt-6">Your Patients</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {patients.map((patient: User) => (
+          <PatientCard key={patient.id} patient={patient} onSelect={setSelectedPatientId} currentUserLocation={doctorLocation} />
+        ))}
+      </div>
+       {patients.length === 0 && <p className="text-gray-400">You do not have any patients assigned.</p>}
     </div>
   );
 };

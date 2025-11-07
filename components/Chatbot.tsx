@@ -4,6 +4,10 @@ import { sendMessageToBot } from '../services/geminiService';
 import Button from './ui/Button';
 import { PaperAirplaneIcon, ChatAlt2Icon } from './icons';
 import Spinner from './ui/Spinner';
+import { useAuth } from '../hooks/useAuth';
+import { useMockVitals } from '../hooks/useMockVitals';
+import { MOCK_PATIENTS } from '../constants';
+import { Patient } from '../types';
 
 interface Message {
   sender: 'user' | 'bot';
@@ -11,6 +15,10 @@ interface Message {
 }
 
 const Chatbot: React.FC = () => {
+  const { user } = useAuth();
+  const patient = user ? (MOCK_PATIENTS[user.id] as Patient) : null;
+  const { vitals } = useMockVitals(user?.id || '');
+
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { sender: 'bot', text: "Hello! I'm the MOWAERS AI Assistant. How can I help you? Please note, I cannot provide medical advice." }
@@ -26,7 +34,7 @@ const Chatbot: React.FC = () => {
   useEffect(scrollToBottom, [messages]);
 
   const handleSend = async () => {
-    if (input.trim() === '' || isLoading) return;
+    if (input.trim() === '' || isLoading || !patient) return;
 
     const userMessage: Message = { sender: 'user', text: input };
     setMessages(prev => [...prev, userMessage]);
@@ -34,7 +42,7 @@ const Chatbot: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const botResponse = await sendMessageToBot(input);
+      const botResponse = await sendMessageToBot(input, patient, vitals);
       const botMessage: Message = { sender: 'bot', text: botResponse };
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
@@ -50,7 +58,7 @@ const Chatbot: React.FC = () => {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 bg-brand-primary text-white p-4 rounded-full shadow-lg hover:bg-blue-500 transition-transform hover:scale-110"
+        className="fixed bottom-6 right-6 bg-brand-primary text-white p-4 rounded-full shadow-lg hover:bg-blue-500 transition-transform hover:scale-110 z-40"
         aria-label="Open Chatbot"
       >
         <ChatAlt2Icon className="h-8 w-8" />

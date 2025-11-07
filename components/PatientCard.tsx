@@ -1,65 +1,69 @@
-
 import React from 'react';
-import { Patient, Vital, VitalStatus } from '../types';
+import { User, VitalStatus, Coordinates } from '../types';
 import { useMockVitals } from '../hooks/useMockVitals';
-import Spinner from './ui/Spinner';
-import { LocationMarkerIcon, HeartIcon } from './icons';
+import { ArrowUpIcon, ArrowDownIcon, MinusIcon, MapIcon } from './icons';
+import { MOCK_EWS, MOCK_PATIENTS } from '../constants';
+import { calculateDistance } from '../utils/location';
 
 interface PatientCardProps {
-  patient: Patient;
+  patient: User;
   onSelect: (patientId: string) => void;
+  currentUserLocation?: Coordinates | null;
 }
 
-const PatientCard: React.FC<PatientCardProps> = ({ patient, onSelect }) => {
-  const { vitals, loading } = useMockVitals(patient.id);
-
-  const getOverallStatus = (currentVitals: Vital[]): VitalStatus => {
-    if (currentVitals.some(v => v.status === VitalStatus.Critical)) return VitalStatus.Critical;
-    if (currentVitals.some(v => v.status === VitalStatus.Warning)) return VitalStatus.Warning;
-    return VitalStatus.Normal;
+const PatientCard: React.FC<PatientCardProps> = ({ patient, onSelect, currentUserLocation }) => {
+  const { vitals } = useMockVitals(patient.id);
+  const ews = MOCK_EWS[patient.id];
+  const patientData = MOCK_PATIENTS[patient.id];
+  
+  const statusClasses = {
+      Low: { bg: 'bg-status-green/10', text: 'text-status-green', border: 'border-status-green/30' },
+      Medium: { bg: 'bg-status-amber/10', text: 'text-status-amber', border: 'border-status-amber/30' },
+      High: { bg: 'bg-status-red/10', text: 'text-status-red', border: 'border-status-red/30 animate-pulse' },
   };
 
-  const status = loading ? patient.status : getOverallStatus(vitals);
+  const currentStatus = ews?.level || 'Low';
+  
+  const trendIcon = (trend: 'up' | 'down' | 'stable') => {
+    switch (trend) {
+        case 'up': return <ArrowUpIcon className="h-4 w-4" />;
+        case 'down': return <ArrowDownIcon className="h-4 w-4" />;
+        default: return <MinusIcon className="h-4 w-4" />;
+    }
+  }
 
-  const statusClasses: Record<VitalStatus, { bg: string, text: string, border: string }> = {
-    [VitalStatus.Normal]: { bg: 'bg-status-green/10', text: 'text-status-green', border: 'border-status-green' },
-    [VitalStatus.Warning]: { bg: 'bg-status-amber/10', text: 'text-status-amber', border: 'border-status-amber' },
-    [VitalStatus.Critical]: { bg: 'bg-status-red/10', text: 'text-status-red animate-pulse', border: 'border-status-red' },
-  };
-
-  const currentStatus = statusClasses[status];
-  const heartRate = vitals.find(v => v.type === 'HR');
+  const distance = currentUserLocation && patientData?.coordinates 
+    ? calculateDistance(currentUserLocation, patientData.coordinates).toFixed(1)
+    : null;
 
   return (
-    <div
-      onClick={() => onSelect(patient.id)}
-      className={`bg-brand-dark-accent rounded-lg p-4 shadow-lg border-2 border-transparent hover:border-brand-primary cursor-pointer transition-all duration-300 flex flex-col justify-between ${currentStatus.border}`}
-    >
-      <div>
-        <div className="flex justify-between items-start">
-          <div>
-            <h3 className="text-lg font-bold text-white">{patient.name}</h3>
-            <p className="text-sm text-gray-400">Age: {patient.age}</p>
-          </div>
-          <span className={`px-3 py-1 text-xs font-semibold rounded-full ${currentStatus.bg} ${currentStatus.text}`}>
-            {status}
-          </span>
-        </div>
-        <div className="text-sm text-gray-500 mt-2 flex items-center">
-          <LocationMarkerIcon className="h-4 w-4 mr-1"/>
-          {patient.location}
-        </div>
+    <div className={`bg-brand-dark-accent rounded-lg shadow-lg p-4 border-l-4 transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] cursor-pointer ${statusClasses[currentStatus].border}`} onClick={() => onSelect(patient.id)}>
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-bold text-white">{patient.name}</h3>
+        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusClasses[currentStatus].bg} ${statusClasses[currentStatus].text}`}>
+          EWS: {currentStatus} ({ews?.score})
+        </span>
       </div>
-      <div className="mt-4 pt-4 border-t border-gray-700">
-        {loading ? <div className="flex justify-center items-center h-8"><Spinner /></div> : (
-          <div className="flex justify-between items-center text-sm">
-              <div className="flex items-center text-gray-300">
-                <HeartIcon className="h-5 w-5 mr-2 text-status-red" />
-                <span>{heartRate?.value || 'N/A'} {heartRate?.unit}</span>
-              </div>
-              <button className="text-brand-primary hover:underline">View Details</button>
-          </div>
+      <div className="flex justify-between items-center">
+        <p className="text-sm text-gray-400">Patient ID: {patient.id}</p>
+        {distance && (
+            <div className="flex items-center space-x-1 text-xs text-brand-primary">
+                <MapIcon className="h-4 w-4" />
+                <span>{distance} mi away</span>
+            </div>
         )}
+      </div>
+      
+      <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+        {vitals.slice(0, 4).map(vital => (
+          <div key={vital.type} className="flex items-center justify-between text-gray-300">
+            <span className="text-gray-400">{vital.type.replace(' Rate', '')}:</span>
+            <div className="flex items-center space-x-1">
+                <span>{vital.value} <span className="text-xs text-gray-500">{vital.unit}</span></span>
+                <span className={vital.status !== VitalStatus.Normal ? 'text-status-amber' : 'text-gray-500'}>{trendIcon(vital.trend)}</span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
