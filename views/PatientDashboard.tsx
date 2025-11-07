@@ -130,6 +130,7 @@ const PatientDashboard: React.FC = () => {
             patientId: user!.id,
             patientName: user!.name,
             message: 'SOS button activated by patient!',
+            // FIX: Corrected typo from `new date()` to `new Date()`.
             timestamp: new Date(),
             acknowledged: false,
             type: 'sos'
@@ -180,21 +181,21 @@ const PatientDashboard: React.FC = () => {
                     label="ECG" 
                     color="#4ade80" 
                     generator={ecgGenerator(heartRateVital?.value, heartRateVital?.status)}
-                    value={heartRateVital?.value.toString()}
+                    value={heartRateVital?.value?.toString()}
                     unit={heartRateVital?.unit}
                 />
                  <WaveformCard 
                     label="SpO2" 
                     color="#60a5fa" 
                     generator={ppgGenerator(heartRateVital?.value, spO2Vital?.status)}
-                    value={spO2Vital?.value.toString()}
+                    value={spO2Vital?.value?.toString()}
                     unit={spO2Vital?.unit}
                 />
                  <WaveformCard 
                     label="Respiration" 
                     color="#facc15" 
                     generator={respGenerator(respRateVital?.value, respRateVital?.status)}
-                    value={respRateVital?.value.toString()}
+                    value={respRateVital?.value?.toString()}
                     unit={respRateVital?.unit}
                 />
             </div>

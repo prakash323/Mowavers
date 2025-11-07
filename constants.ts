@@ -7,7 +7,8 @@ export const MOCK_PATIENTS: Record<string, Patient> = {
         role: UserRole.Patient,
         dob: '1960-05-15',
         conditions: ['Hypertension', 'COPD'],
-        coordinates: { latitude: 34.0522, longitude: -118.2437 }
+        coordinates: { latitude: 34.0522, longitude: -118.2437 },
+        avatarUrl: 'https://i.pravatar.cc/150?u=patient-1'
     },
     'patient-2': {
         id: 'patient-2',
@@ -15,7 +16,8 @@ export const MOCK_PATIENTS: Record<string, Patient> = {
         role: UserRole.Patient,
         dob: '1955-08-20',
         conditions: ['Diabetes Type 2'],
-        coordinates: { latitude: 34.0622, longitude: -118.2537 }
+        coordinates: { latitude: 34.0622, longitude: -118.2537 },
+        avatarUrl: 'https://i.pravatar.cc/150?u=patient-2'
     },
     'patient-3': {
         id: 'patient-3',

@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { MOCK_TIMELINE } from '../constants';
-import { TimelineEvent, HistoricalVitalReading } from '../types';
+import { MOCK_TIMELINE, MOCK_PATIENTS } from '../constants';
+import { TimelineEvent, HistoricalVitalReading, Patient } from '../types';
 import HistoricalChart from '../components/HistoricalChart';
-import { HeartIcon, BellIcon, EmojiHappyIcon, PillIcon, MicrophoneIcon, ChatAltIcon, SparklesIcon } from '../components/icons';
+import { HeartIcon, BellIcon, EmojiHappyIcon, PillIcon, MicrophoneIcon, ChatAltIcon, SparklesIcon, UserCircleIcon } from '../components/icons';
 
 const eventConfig: Record<string, { icon: React.FC<any>, color: string, label: string }> = {
     all: { icon: SparklesIcon, color: 'text-brand-primary', label: 'All Events' },
@@ -50,16 +50,91 @@ const HistoryTimelineItem: React.FC<{ event: TimelineEvent }> = ({ event }) => {
 const HistoryPage: React.FC = () => {
     const { user } = useAuth();
     const [filter, setFilter] = useState('all');
+    const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
     if (!user) {
         return <div>Loading...</div>; // Should not happen if page is protected
     }
     
+    // Caretaker and Doctor View
     if (user.role === 'Caretaker' || user.role === 'Doctor') {
-        return (
-            <div className="text-center p-8">
-                <h2 className="text-2xl font-bold text-brand-text-light dark:text-white">Patient History</h2>
-                <p className="mt-4 text-gray-500 dark:text-gray-400">Please select a patient from your dashboard to view their detailed history and timeline.</p>
+        const allPatients: Patient[] = Object.values(MOCK_PATIENTS);
+        
+        if (!selectedPatient) {
+             return (
+                <div className="animate-fade-in space-y-6">
+                    <h2 className="text-3xl font-bold text-brand-text-light dark:text-white">Patient History</h2>
+                    <p className="text-gray-500 dark:text-gray-400">Select a patient to view their detailed history and timeline.</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {allPatients.map(patient => (
+                        <button 
+                        key={patient.id} 
+                        onClick={() => setSelectedPatient(patient)}
+                        className="text-left p-4 bg-white dark:bg-brand-dark-accent rounded-lg shadow hover:bg-gray-100 dark:hover:bg-brand-dark transition-colors w-full flex items-center space-x-4"
+                        >
+                        <div className="flex-shrink-0">
+                            {patient.avatarUrl ? (
+                            <img src={patient.avatarUrl} alt={patient.name} className="h-12 w-12 rounded-full object-cover" />
+                            ) : (
+                            <div className="h-12 w-12 rounded-full bg-brand-light dark:bg-brand-dark flex items-center justify-center">
+                                <UserCircleIcon className="h-8 w-8 text-gray-400" />
+                            </div>
+                            )}
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-brand-text-light dark:text-white">{patient.name}</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{patient.dob}</p>
+                        </div>
+                        </button>
+                    ))}
+                    </div>
+                </div>
+            );
+        }
+        
+        // A patient has been selected
+        const patientId = selectedPatient.id;
+        const allEvents = MOCK_TIMELINE[patientId] || [];
+        const vitalEvents = allEvents.filter(e => e.eventType === 'vital') as HistoricalVitalReading[];
+
+        const filteredEvents = useMemo(() => {
+            if (filter === 'all') return allEvents;
+            return allEvents.filter(e => e.eventType === filter);
+        }, [allEvents, filter]);
+
+         return (
+            <div className="animate-fade-in space-y-6">
+                <button onClick={() => setSelectedPatient(null)} className="text-brand-primary hover:underline mb-4">
+                    &larr; Back to Patient List
+                </button>
+                <h2 className="text-3xl font-bold text-brand-text-light dark:text-white">Health History for {selectedPatient.name}</h2>
+                
+                <HistoricalChart data={vitalEvents} />
+
+                <div>
+                    <h3 className="text-xl font-bold text-brand-text-light dark:text-white mb-4">Event Timeline</h3>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                        {Object.entries(eventConfig).map(([key, config]) => (
+                            <button 
+                                key={key}
+                                onClick={() => setFilter(key)}
+                                className={`px-3 py-1 text-sm rounded-full flex items-center gap-2 transition-colors ${filter === key ? 'bg-brand-primary text-white' : 'bg-white dark:bg-brand-dark-accent text-brand-text-light dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-brand-dark'}`}
+                            >
+                            <config.icon className="w-4 h-4" /> 
+                            {config.label}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+                        {filteredEvents.length > 0 ? (
+                            filteredEvents.map((event, index) => <HistoryTimelineItem key={`${event.eventType}-${(event as any).id || index}`} event={event} />)
+                        ) : (
+                            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                No events found for this filter.
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
         );
     }

@@ -21,6 +21,7 @@ export interface Patient extends User {
   dob: string;
   conditions?: string[];
   coordinates?: Coordinates;
+  avatarUrl?: string;
 }
 
 export enum VitalStatus {

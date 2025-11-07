@@ -88,7 +88,7 @@ const WaveformCard: React.FC<WaveformCardProps> = ({ label, color, generator, va
         const height = canvas.height;
         const data = dataRef.current;
 
-        // Fix: Pass the current time to the generator to create a moving waveform.
+        // FIX: Pass the current time to the generator function, which expects one argument.
         const newValue = generator(timeRef.current);
         data.push(newValue);
         timeRef.current += 1;
@@ -148,10 +148,7 @@ const WaveformCard: React.FC<WaveformCardProps> = ({ label, color, generator, va
                 const { width, height } = entry.contentRect;
                 canvas.width = width;
                 canvas.height = height;
-                // FIX: Ensure width is a non-negative integer before creating an array.
-                // This prevents a RangeError if the width is fractional or negative during render.
-                const safeWidth = Math.max(0, Math.floor(width));
-                dataRef.current = Array(safeWidth).fill(50);
+                dataRef.current = Array(width).fill(50);
             }
         });
         resizeObserver.observe(parent);
