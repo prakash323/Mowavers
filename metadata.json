@@ -1,0 +1,5 @@
+{
+  "name": "Copy of MOWAERS MV",
+  "description": "An IoT-enabled multi-organ wearable monitoring and emergency response system for Patients, Caretakers, and Doctors. This MVP showcases real-time vital monitoring, role-based dashboards, and an integrated AI assistant.",
+  "requestFramePermissions": []
+}
